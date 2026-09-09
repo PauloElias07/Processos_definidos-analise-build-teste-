@@ -2,7 +2,7 @@ name: Dependa
 
 on:
   push:
-    banch: [main]
+    branches: [main]
 
 jobs:
   analise:
@@ -11,26 +11,27 @@ jobs:
 
     steps:
       - name: Preparar ambiente
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
       
       - name: Configurar Python
-      - uses: actions/setup-python@v5
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Instalar Dependencias
         run: pip install -r requirements.txt
 
-      - name: Analise Estatica(Linter) Flake8
+      - name: Analise Estatica (Linter) Flake8
         run: flake8 .
         
       - name: Análise de segurança com Bandit
         run: bandit -r .
 
-    build:
-      name: Build
-      runs-on: ubuntu-latest
-      needs: analise
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: analise
 
     steps:
       - name: Checkout
@@ -49,10 +50,11 @@ jobs:
           name: projeto-python
           path: projeto.zip
 
-    testes:
-      name: Testes
-      runs-on: ubuntu-latest
-      needs: build
+
+  testes:
+    name: Testes
+    runs-on: ubuntu-latest
+    needs: build
 
     steps:
       - name: Baixar ZIP do build
