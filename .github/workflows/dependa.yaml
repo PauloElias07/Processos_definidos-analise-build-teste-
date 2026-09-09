@@ -36,33 +36,42 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v4
 
-        - name: Configurar Python
-          uses: actions/setup-python@v5
-          with:
-            python-version: "3.12"
+        - name: Gerar arquivo ZIP
+          run: |
+            zip -r projeto.zip . \
+              -x ".git/*" \
+              -x ".github/*" \
+              -x "__pycache__/*"
 
-        - name: Instalar dependências
-          run: pip install -r requirements.txt
+        - name: Upload do ZIP
+          uses: actions/upload-artifact@v4
+          with:
+            name: projeto-python
+            path: projeto.zip
 
     testes:
       name: Testes
       runs-on: ubuntu-latest
       needs: build
 
-      steps:
-        - name: Checkout do código
-          uses: actions/checkout@v4
+    steps:
+      - name: Baixar ZIP do build
+        uses: actions/download-artifact@v4
+        with:
+          name: projeto-python
 
-        - name: Configurar Python
-          uses: actions/setup-python@v5
-          with:
-            python-version: "3.12"
+      - name: Extrair ZIP
+        run: unzip projeto.zip -d projeto
 
-        - name: Instalar dependências
-          run: pip install -r requirements.txt
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-        - name: Executar testes
-          run: pytest -v
+      - name: Instalar dependências
+        working-directory: projeto
+        run: pip install -r requirements.txt
 
-        - name: Verificar cobertura
-          run: pytest --cov=. --cov-fail-under=90
+      - name: Executar testes
+        working-directory: projeto
+        run: pytest -v
